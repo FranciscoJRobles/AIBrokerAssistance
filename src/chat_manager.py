@@ -1,12 +1,12 @@
 """
 ChatManager: gestiona el ciclo de chat conversacional con el usuario y coordina el orquestador.
 """
-from src.orchestrator import Orchestrator
 from src.ia_client import IAClient
+from src.langgraph.graph_manager import GraphManager
 
 class ChatManager:
     def __init__(self):
-        self.orchestrator = Orchestrator()
+        self.graph = GraphManager()
 
     def run(self):
         print("Bienvenido al Asistente de Inversión IA (Multiagente)")
