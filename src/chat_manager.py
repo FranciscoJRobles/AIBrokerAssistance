@@ -13,6 +13,7 @@ class ChatManager:
     def run(self):
         print("Bienvenido al Asistente de Inversión IA (Multiagente)")
         print("Escribe tu pregunta o 'salir' para terminar.")
+        print("El sistema está preparado para hacer análisis fundamental, técnico y de noticias. Si quieres información precisa sobre una empresa, intenta proporcionar el 'ticker' o el nombre exacto de la empresa en tu pregunta.")
         chat_history = ConversationBufferMemory()
         while True:
             question = input("\nPregunta: ")
@@ -28,7 +29,5 @@ class ChatManager:
     def _initiate_graph_flow(self, question, chat_history: ConversationBufferMemory):
         # Inicia el grafo con la pregunta del usuario
         graph = GraphManager(question,chat_history.buffer)
-        graph.run()
-        input_data = {"question": question}
-        response = self.graph.run(input_data)
+        response = graph.run()
         return response

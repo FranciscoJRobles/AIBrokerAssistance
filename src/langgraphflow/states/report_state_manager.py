@@ -15,11 +15,34 @@ class ReportStateManager:
     def set_user_question(self, value: str):
         self.state['user_question'] = value
 
+    # datos del nodo orquestador
     def get_nodes_route(self) -> list:
         return self.state.get('nodes_route', [])
     def set_nodes_route(self, value: list):
         self.state['nodes_route'] = value
 
+    def get_companies(self) -> list:
+        return self.state.get('companies', [])
+    def set_companies(self, value: list):
+        self.state['companies'] = value
+
+    def get_sector(self) -> str:
+        return self.state.get('sector', '')
+    def set_sector(self, value: str):
+        self.state['sector'] = value
+
+    def get_period(self) -> str:
+        return self.state.get('period', '')
+    def set_period(self, value: str):
+        self.state['period'] = value
+
+    def get_analysis_type(self) -> str:
+        return self.state.get('analysis_type', '')
+    def set_analysis_type(self, value: str):
+        self.state['analysis_type'] = value
+        
+    # -------------
+    
     def get_fundamental_result(self) -> str:
         return self.state.get('fundamental_result', '')
     def set_fundamental_result(self, value: str):

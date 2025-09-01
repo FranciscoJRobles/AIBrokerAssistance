@@ -1,11 +1,11 @@
 """
 GraphManager: Define el grafo principal y la orquestación multiagente con LangGraph.
 """
+import uuid
 from langgraph.graph import StateGraph, END
-from ia_client import IAClient
-from langgraphflow.states.report_state import ReportState
 from langgraph.checkpoint.memory import MemorySaver
-from langgraphflow.states.report_state_manager import ReportStateManager
+from src.langgraphflow.states.report_state import ReportState
+from src.langgraphflow.states.report_state_manager import ReportStateManager
 from src.langgraphflow.nodes.fundamental_node import fundamental_node
 from src.langgraphflow.nodes.synthesis_node import synthesis_node
 from src.langgraphflow.nodes.orquestator_node import orquestator_node
@@ -15,8 +15,6 @@ from sqlalchemy.orm import Session
 class GraphManager:
     def __init__(self, question, chat_history):
         self.checkpointer = MemorySaver()  # Para persistir estado entre ejecuciones
-        self.llm_client = IAClient()
-        self.nodes = ['fundamental','synthesis', 'end']
         self.question = question
         self.chat_history = chat_history        
         self.graph = self._build_graph()
@@ -26,18 +24,18 @@ class GraphManager:
     def _build_graph(self) -> StateGraph:
         graph = StateGraph(ReportState)
         # Registrar nodos/agentes
-        graph.add_node("orquestator", orquestator_node)
-        graph.add_node("fundamental", fundamental_node)
-        graph.add_node("synthesis", synthesis_node)
+        graph.add_node("orquestator", lambda state: orquestator_node(state))
+        graph.add_node("fundamental", lambda state: fundamental_node(state))
+        graph.add_node("synthesis", lambda state: synthesis_node(state))
         
         graph.set_entry_point("orquestator")
         
-        graph.add_conditional_edge("orquestator", next_node_selector, {
-            "fundamental": fundamental_node
+        graph.add_conditional_edges("orquestator", lambda state: next_node_selector(state), {
+            "fundamental": "fundamental"
         })
         
-        graph.add_conditional_edge("fundamental", next_node_selector, {
-            "synthesis": synthesis_node
+        graph.add_conditional_edges("fundamental", lambda state: next_node_selector(state), {
+            "synthesis": "synthesis"
         })
         
         graph.add_edge("synthesis", END)
@@ -52,7 +50,7 @@ class GraphManager:
                 "user_question": self.question,
                 "final_response": ""
             }
-            config = {"configurable": {"question": {self.question}}}
+            config = {"configurable": {"thread_id": str(uuid.uuid4())}}
             state = self.graph.invoke(initial_state, config)
             state_manager = ReportStateManager(state)
             return state_manager.get_final_response()
@@ -64,5 +62,5 @@ def next_node_selector(state):
     # Devuelve el siguiente nodo de la lista, o 'synthesis' si no quedan
     state_manager = ReportStateManager(state)
     if state_manager.get_nodes_route():
-        return state['next_nodes'].pop(0)
+        return state['nodes_route'].pop(0)
     return 'synthesis'

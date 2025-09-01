@@ -31,7 +31,7 @@ IA_MODEL = IAModel.BigModel  # Modelo por defecto
 
 class IAClient:
     # Perfiles de configuración para la IA
-    PERFILES = {
+    PROFILES = {
         "creativa": {
             "temperature": 1.0,
             "top_p": 0.95,
@@ -64,13 +64,13 @@ class IAClient:
         }
     }   
 
-    def __init__(self, config=None, perfil = IAProfilesEnum.ANALYST):
+    def __init__(self, config=None, profile = IAProfilesEnum.ANALYST):
         """
         Inicializa el cliente de IA con Azure OpenAI y LangChain.
         Permite seleccionar un perfil de parámetros.
         """
         self.config = config or {}
-        self.perfil = perfil.value
+        self.profile = profile.value
         self.ia_model = IAModel.Default
 
         # Inicializa el modelo de generación y embeddings
@@ -82,7 +82,7 @@ class IAClient:
         """
         Inicializa el modelo LLM con los parámetros del perfil actual.
         """
-        params = self.PERFILES.get(self.perfil, self.PERFILES["neutral"])
+        params = self.PROFILES.get(self.profile, self.PROFILES["neutral"])
         if ia_model == IAModel.BigModel:         
             llm = AzureChatOpenAI(
                 azure_deployment=get_env_variable("AZURE_OPENAI_DEPLOYMENT_NAME", ""),
@@ -107,19 +107,12 @@ class IAClient:
         return llm
             
 
-    def IA_call_process_message(self, message: str, context: str = None, use_history: bool = False) -> str:
+    def IA_call_process_message(self, message: str, context: str = None) -> str:
         """
         Procesa un mensaje usando la IA de Azure OpenAI y devuelve la respuesta generada.
         Si use_history=True, añade el historial de la conversación al contexto.
         """
         messages = []
-        # Enriquecer el contexto con el historial si se solicita
-        if use_history:
-            history = self.get_history()
-            if context:
-                context = f"{context}\n\nHistorial:\n{history}"
-            else:
-                context = f"Historial:\n{history}"
         if context:
             messages.append(SystemMessage(content=context))
         messages.append(HumanMessage(content=message))
