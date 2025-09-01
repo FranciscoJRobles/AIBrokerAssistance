@@ -124,14 +124,4 @@ class IAClient:
             messages.append(SystemMessage(content=context))
         messages.append(HumanMessage(content=message))
         response = self.llm.invoke(messages)
-        self.add_message(message, response.content)
         return response.content
-
-
-    def add_message(self, user_message: str, ai_message: str):
-        """Agrega mensajes al historial de memoria."""
-        self.memory.save_context({"input": user_message}, {"output": ai_message})
-
-    def get_history(self) -> str:
-        """Devuelve el historial completo de la conversación."""
-        return self.memory.buffer
