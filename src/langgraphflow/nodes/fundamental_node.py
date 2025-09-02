@@ -52,22 +52,21 @@ class FundamentalNode:
                     "ROE": info.get("returnOnEquity"), # Return on Equity (rentabilidad sobre recursos propios)
                     "deuda": info.get("totalDebt"),  # Deuda total de la empresa
                     "sector": info.get("sector"),    # Sector económico al que pertenece la empresa
+                    "marketCap": info.get("marketCap"),           # Capitalización bursátil
+                    "dividendYield": info.get("dividendYield"),   # Rentabilidad por dividendo
+                    "payoutRatio": info.get("payoutRatio"),       # Ratio de pago de dividendos
+                    "currentRatio": info.get("currentRatio"),     # Ratio de liquidez corriente
+                    "quickRatio": info.get("quickRatio"),         # Ratio de liquidez inmediata
+                    "totalRevenue": info.get("totalRevenue"),     # Ingresos totales
+                    "grossMargins": info.get("grossMargins"),     # Margen bruto
+                    "operatingMargins": info.get("operatingMargins"), # Margen operativo
+                    "profitMargins": info.get("profitMargins"),   # Margen de beneficio neto
+                    "beta": info.get("beta"),                     # Volatilidad respecto al mercado
+                    "earningsGrowth": info.get("earningsGrowth"), # Crecimiento de beneficios
+                    "revenueGrowth": info.get("revenueGrowth"),   # Crecimiento de ingresos
+                    "country": info.get("country"),               # País de la empresa
+                    "website": info.get("website"),               # Web oficial de la empresa
                     "comentario": f"Datos fundamentales de {nombre} ({ticker}) extraídos correctamente."
-                    # --- Otros datos útiles que puedes extraer ---
-                    # "marketCap": info.get("marketCap"),           # Capitalización bursátil
-                    # "dividendYield": info.get("dividendYield"),   # Rentabilidad por dividendo
-                    # "payoutRatio": info.get("payoutRatio"),       # Ratio de pago de dividendos
-                    # "currentRatio": info.get("currentRatio"),     # Ratio de liquidez corriente
-                    # "quickRatio": info.get("quickRatio"),         # Ratio de liquidez inmediata
-                    # "totalRevenue": info.get("totalRevenue"),     # Ingresos totales
-                    # "grossMargins": info.get("grossMargins"),     # Margen bruto
-                    # "operatingMargins": info.get("operatingMargins"), # Margen operativo
-                    # "profitMargins": info.get("profitMargins"),   # Margen de beneficio neto
-                    # "beta": info.get("beta"),                     # Volatilidad respecto al mercado
-                    # "earningsGrowth": info.get("earningsGrowth"), # Crecimiento de beneficios
-                    # "revenueGrowth": info.get("revenueGrowth"),   # Crecimiento de ingresos
-                    # "country": info.get("country"),               # País de la empresa
-                    # "website": info.get("website"),               # Web oficial de la empresa
                 }
             except Exception as e:
                 result = {

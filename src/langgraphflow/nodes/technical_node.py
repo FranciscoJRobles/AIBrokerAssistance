@@ -51,17 +51,6 @@ class TechnicalNode:
                 if df.empty:
                     raise Exception("No hay datos históricos disponibles.")
 
-                # Indicadores técnicos
-                df['MA20'] = df['Close'].rolling(window=20).mean()  # Media móvil 20 días
-                df['MA50'] = df['Close'].rolling(window=50).mean()  # Media móvil 50 días
-
-                # RSI (Relative Strength Index)
-                delta = df['Close'].diff()
-                gain = (delta.where(delta > 0, 0)).rolling(window=14).mean()
-                loss = (-delta.where(delta < 0, 0)).rolling(window=14).mean()
-                rs = gain / loss
-                df['RSI'] = 100 - (100 / (1 + rs))
-
                 # MACD
                 exp12 = df['Close'].ewm(span=12, adjust=False).mean()
                 exp26 = df['Close'].ewm(span=26, adjust=False).mean()
@@ -73,11 +62,11 @@ class TechnicalNode:
                 result = {
                     "nombre": nombre,
                     "ticker": ticker,
-                    "MA20": round(last['MA20'], 2) if not pd.isna(last['MA20']) else None,
-                    "MA50": round(last['MA50'], 2) if not pd.isna(last['MA50']) else None,
-                    "RSI": round(last['RSI'], 2) if not pd.isna(last['RSI']) else None,
-                    "MACD": round(last['MACD'], 2) if not pd.isna(last['MACD']) else None,
-                    "Signal": round(last['Signal'], 2) if not pd.isna(last['Signal']) else None,
+                    "MA20": self._get_indicator('MA20', last),
+                    "MA50": self._get_indicator('MA50', last),
+                    "RSI": self._get_indicator('RSI', last),
+                    "MACD": self._get_indicator('MACD', last),
+                    "Signal": self._get_indicator('Signal', last),
                     "comentario": f"Indicadores técnicos de {nombre} ({ticker}) extraídos correctamente."
                 }
             except Exception as e:
@@ -89,6 +78,23 @@ class TechnicalNode:
                 }
             results.append(result)
         return results
+
+    def _safe_float(self, val):
+        if pd.isna(val):
+            return None
+        try:
+            return float(val)
+        except Exception:
+            return str(val)
+        
+    def _get_indicator(self,ind, last):
+        val = last.get(ind, None) if hasattr(last, 'get') else last[ind] if ind in last else None
+        if val is None:
+            return None
+        try:
+            return self._safe_float(round(val, 2))
+        except Exception:
+            return None
 
 # Helper para el grafo
 def technical_node(state: ReportState) -> ReportState:

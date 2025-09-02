@@ -9,6 +9,7 @@ from src.langgraphflow.states.report_state_manager import ReportStateManager
 from src.langgraphflow.nodes.fundamental_node import fundamental_node
 from src.langgraphflow.nodes.synthesis_node import synthesis_node
 from src.langgraphflow.nodes.orquestator_node import orquestator_node
+from src.langgraphflow.nodes.technical_node import technical_node
 from sqlalchemy.orm import Session
 
 
@@ -26,15 +27,24 @@ class GraphManager:
         # Registrar nodos/agentes
         graph.add_node("orquestator", lambda state: orquestator_node(state))
         graph.add_node("fundamental", lambda state: fundamental_node(state))
+        graph.add_node("technical", lambda state: technical_node(state))
         graph.add_node("synthesis", lambda state: synthesis_node(state))
         
         graph.set_entry_point("orquestator")
         
         graph.add_conditional_edges("orquestator", lambda state: next_node_selector(state), {
-            "fundamental": "fundamental"
+            "fundamental": "fundamental",
+            "technical": "technical",
+            "synthesis": "synthesis"
         })
         
         graph.add_conditional_edges("fundamental", lambda state: next_node_selector(state), {
+            "technical": "technical",
+            "synthesis": "synthesis"
+        })
+        
+        graph.add_conditional_edges("technical", lambda state: next_node_selector(state), {
+            "fundalmental": "fundamental",
             "synthesis": "synthesis"
         })
         

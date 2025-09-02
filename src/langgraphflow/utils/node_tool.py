@@ -5,11 +5,11 @@ class NodeTool:
         
 fundamental_tool = NodeTool(
     name="fundamental",
-    description="Análisis fundamental de empresas: ratios financieros, balances, PER, ROE, etc."
+    description="Análisis fundamental de empresas: ratios financieros, balances, PER, ROE, etc. Siempre que se ejecuta este nodo  devuelve la misma información para todas las empresas indicadas."
 )
 technical_tool = NodeTool(
     name="technical",
-    description="Análisis técnico: indicadores, series históricas, señales como RSI, MACD, medias móviles."
+    description="Análisis técnico: indicadores, series históricas, señales como RSI, MACD, medias móviles. Siempre que se ejecuta este nodo  devuelve la misma información para todas las empresas indicadas."
 )
 news_tool = NodeTool(
     name="news",
@@ -20,7 +20,7 @@ synthesis_tool = NodeTool(
     description="Síntesis e integración de resultados de los agentes anteriores para generar un informe final. Siempre será el último nodo que se ejecute."
 )
 
-TOOLS = [fundamental_tool, synthesis_tool]
+TOOLS = [fundamental_tool, technical_tool, synthesis_tool]
 
 def get_tools_list():
     return TOOLS
