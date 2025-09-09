@@ -8,13 +8,6 @@ from src.langgraphflow.states.report_state_manager import ReportStateManager
 import yfinance as yf
 import pandas as pd
 
-# Configuración de certificados (ajusta la ruta si usas symlink)
-os.environ['SSL_CERT_FILE'] = r"D:\certs\AIBrokerLink\venv\Lib\site-packages\certifi\cacert.pem"
-os.environ['REQUESTS_CA_BUNDLE'] = r"D:\certs\AIBrokerLink\venv\Lib\site-packages\certifi\cacert.pem"
-os.environ['CURL_CA_BUNDLE'] = r"D:\certs\AIBrokerLink\venv\Lib\site-packages\certifi\cacert.pem"
-
-print("Usando certificado en:", certifi.where())
-
 class TechnicalNode:
 
     def __init__(self):

@@ -10,11 +10,12 @@ from src.langgraphflow.nodes.fundamental_node import fundamental_node
 from src.langgraphflow.nodes.synthesis_node import synthesis_node
 from src.langgraphflow.nodes.orquestator_node import orquestator_node
 from src.langgraphflow.nodes.technical_node import technical_node
+from src.langgraphflow.nodes.news_node import news_node
 from sqlalchemy.orm import Session
 
 
 class GraphManager:
-    def __init__(self, question, chat_history):
+    def __init__(self, question=None, chat_history=None):
         self.checkpointer = MemorySaver()  # Para persistir estado entre ejecuciones
         self.question = question
         self.chat_history = chat_history        
@@ -29,23 +30,33 @@ class GraphManager:
         graph.add_node("fundamental", lambda state: fundamental_node(state))
         graph.add_node("technical", lambda state: technical_node(state))
         graph.add_node("synthesis", lambda state: synthesis_node(state))
+        graph.add_node("news", lambda state: news_node(state))
         
         graph.set_entry_point("orquestator")
         
         graph.add_conditional_edges("orquestator", lambda state: next_node_selector(state), {
             "fundamental": "fundamental",
             "technical": "technical",
-            "synthesis": "synthesis"
+            "synthesis": "synthesis",
+            "news": "news"
         })
         
         graph.add_conditional_edges("fundamental", lambda state: next_node_selector(state), {
             "technical": "technical",
-            "synthesis": "synthesis"
+            "synthesis": "synthesis",
+            "news": "news"
         })
         
         graph.add_conditional_edges("technical", lambda state: next_node_selector(state), {
             "fundalmental": "fundamental",
-            "synthesis": "synthesis"
+            "synthesis": "synthesis",
+            "news": "news"
+        })
+        
+        graph.add_conditional_edges("news", lambda state: next_node_selector(state), {
+            "fundalmental": "fundamental",
+            "technical": "technical",
+            "synthesis": "synthesis"            
         })
         
         graph.add_edge("synthesis", END)
@@ -67,6 +78,26 @@ class GraphManager:
         except Exception as e:
             print(f"GraphManager: Error al ejecutar el grafo: {e}")
             return "Error: Lo siento, ha ocurrido un error en el sistema al procesar tu solicitud."
+        
+        
+    def export_to_dot(self) -> str:
+        """
+        Export the graph structure to DOT format.
+
+        Returns:
+            A string containing the DOT representation of the graph.
+        """
+        compiled_graph = self.graph
+        dot_lines = ["digraph ProcessingGraph {"]
+
+        for node in compiled_graph.nodes:
+            dot_lines.append(f'    "{node}";')
+            for edge in compiled_graph.get_graph().edges:
+                if edge.source == node:
+                    dot_lines.append(f'    "{edge.source}" -> "{edge.target}";')
+
+        dot_lines.append("}")
+        return "\n".join(dot_lines)
 
 def next_node_selector(state):
     # Devuelve el siguiente nodo de la lista, o 'synthesis' si no quedan

@@ -1,0 +1,23 @@
+digraph ProcessingGraph {
+    "__start__";
+    "__start__" -> "orquestator";
+    "orquestator";
+    "orquestator" -> "fundamental";
+    "orquestator" -> "news";
+    "orquestator" -> "synthesis";
+    "orquestator" -> "technical";
+    "fundamental";
+    "fundamental" -> "news";
+    "fundamental" -> "synthesis";
+    "fundamental" -> "technical";
+    "technical";
+    "technical" -> "fundamental";
+    "technical" -> "news";
+    "technical" -> "synthesis";
+    "synthesis";
+    "synthesis" -> "__end__";
+    "news";
+    "news" -> "fundamental";
+    "news" -> "synthesis";
+    "news" -> "technical";
+}

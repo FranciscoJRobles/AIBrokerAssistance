@@ -20,6 +20,11 @@ class ReportStateManager:
         return self.state.get('nodes_route', [])
     def set_nodes_route(self, value: list):
         self.state['nodes_route'] = value
+        
+    def get_global_news_query(self) -> str:
+        return self.state.get('global_news_query', '')
+    def set_global_news_query(self, value: str):
+        self.state['global_news_query'] = value
 
     def get_companies(self) -> list:
         return self.state.get('companies', [])

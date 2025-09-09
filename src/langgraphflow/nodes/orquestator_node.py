@@ -41,9 +41,10 @@ class OrquestatorNode:
             
             json_structure = {
                 "nodes_route": [],  # Ejemplo: ['fundamental', 'technical', 'synthesis']     
-                "companies": [  # Lista de objetos con nombre y ticker
-                    {"name": "Apple", "ticker": "AAPL"},
-                    {"name": "Banco Santander", "ticker": "SAN"}
+                "global_news_query": "",  # Query general si la pregunta es amplia o no menciona empresas
+                "companies": [  # Lista de objetos con nombre, ticker y query específica
+                    {"name": "", "ticker": "", "news_query": ""},
+                    {"name": "", "ticker": "", "news_query": ""}
                 ],
                 "sector": None,
                 "period": "próxima semana",
@@ -58,7 +59,8 @@ class OrquestatorNode:
                 Eres el orquestador de un sistema multiagente de análisis bursátil. Vas a recibir la pregunta de un usuario, que puede ser amplia o específica, y tienes que extraer la siguiente información en el JSON:
 
                 - nodes_route: Lista de nodos a ejecutar en orden, según el análisis necesario para responder a la pregunta. El último nodo debe ser siempre 'synthesis', que genera el informe final. Ejemplo: ['fundamental', 'technical', 'synthesis']. Aquí tienes la lista de nodos disponibles y sus descripciones:\n{tools_descriptions}\n
-                - companies: Lista de objetos, cada uno con el nombre y el ticker de la empresa relevante para la pregunta. Ejemplo: [{{"nombre": "Apple", "ticker": "AAPL"}}, {{"nombre": "Banco Santander", "ticker": "SAN"}}]. Si no se menciona ninguna empresa concreta, deja la lista vacía y los nodos posteriores buscarán en el universo completo.
+                - global_news_query: Query general para buscar noticias si la pregunta es amplia, no menciona empresas concretas o el usuario busca oportunidades generales. Ejemplo: "empresas óptimas para invertir septiembre 2025". Si no aplica, deja vacío.
+                - companies: Lista de objetos, cada uno con el nombre, ticker y una query específica para buscar noticias relevantes sobre esa empresa. Ejemplo: [{{"name": "Apple", "ticker": "AAPL", "news_query": "Apple resultados trimestrales 2025"}}, {{"name": "Banco Santander", "ticker": "SAN", "news_query": "Banco Santander noticias sector bancario España"}}]. Si no se menciona ninguna empresa concreta, deja la lista vacía y los nodos posteriores buscarán en el universo completo. El campo 'news_query' debe mencionar la empresa y formularse según el contexto de la pregunta.
                 - sector: Sector económico relevante para la pregunta (por ejemplo, 'tecnología', 'banca', 'energía'). Si no se especifica, pon null.
                 - period: Periodo temporal relevante para el análisis (por ejemplo, 'próxima semana', 'último año', '2025'). Si no se menciona, pon null.
                 - analysis_type: Tipo de análisis solicitado por el usuario (por ejemplo, 'proyección_subida', 'comparación', 'recomendación', 'análisis_fundamental'). Extrae la intención principal de la pregunta.
@@ -75,14 +77,13 @@ class OrquestatorNode:
                 
             """
             # Llama al LLM
-            llm_response = self.llm_client.IA_call_process_message(user_prompt, system_prompt)
+            #llm_response = self.llm_client.IA_call_process_message(user_prompt, system_prompt)
+            llm_response = default_llm_response
             data = json.loads(json_clean_response(llm_response))
             return data
         except Exception:
             print("OrquestatorNode: Error al interpretar la respuesta del LLM")
             
- 
-
 
 
 # Helper para el grafo
@@ -92,3 +93,4 @@ def orquestator_node(state: ReportState) -> ReportState:
     return node(state)
 
 
+default_llm_response = '{"nodes_route": ["fundamental", "technical", "news", "synthesis"], "global_news_query": "", "companies": [{"name": "Google", "ticker": "GOOGL", "news_query": "Google análisis de mercado próxima semana"}, {"name": "Nvidia", "ticker": "NVDA", "news_query": "Nvidia análisis de mercado próxima semana"}], "sector": null, "period": "próxima semana", "analysis_type": "recomendación"}'

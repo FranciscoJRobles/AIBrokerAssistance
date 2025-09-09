@@ -11,6 +11,7 @@ class ReportState(TypedDict):
     user_question: str  # Pregunta del usuario
     
     nodes_route: List[str]
+    global_news_query: str  # Query general para noticias si no hay empresas específicas
     companies: List[dict]  # Lista de empresas con nombre y ticker
     sector: str  # Sector económico relevante
     period: str  # Periodo temporal relevante
@@ -21,3 +22,4 @@ class ReportState(TypedDict):
     news_result: str
     
     final_response: str  # Respuesta final generada
+    
