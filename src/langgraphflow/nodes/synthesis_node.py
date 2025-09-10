@@ -42,7 +42,9 @@ class SynthesisNode:
             la pregunta original, las empresas analizadas, el sector, el periodo, el tipo de análisis, los resultados de los agentes (fundamental, técnico, noticias) y el histórico de la conversación. 
             Ten en cuenta que no siempre recibirás información en todos los campos, ya que los nodos ejecutados pueden variar según la consulta del usuario. 
             Usa el histórico, si existe y es relevante, para contextualizar la respuesta, añadir información previa o evitar repeticiones innecesarias.
-            Tu tarea es integrar todos los datos disponibles y generar un informe final claro, profesional y útil para el usuario, explicando los resultados de forma comprensible y evitando repeticiones innecesarias.
+            La información de noticias es información extraida de urls encontradas tras una búsqueda con motor de búsqueda, por lo que puede haber mucha información irrelevante, repetida o mal estructurada porque ha sido una transformación de html a texto plano, tendrás que extraer lo más relevante y útil para el usuario referido a cada compañía que estemos analizando.
+            Tu tarea es integrar todos los datos disponibles y generar un informe final claro, profesional y útil para el usuario, explicando los resultados de forma comprensible y evitando repeticiones innecesarias. Debes centrarte especialmente en la petición del usuario y solo mostrar la información de tu contexto que sea relevante para responder a su pregunta o para justificar tu respuesta.
+            Tu salida no debe superar las 1000 palabras.
         """
         
         user_prompt = f"""
@@ -58,7 +60,7 @@ class SynthesisNode:
             Resultados de análisis técnico:
             {technical_result}
 
-            Resultados de análisis de noticias:
+            Resultados de noticias:
             {news_result}
 
             Histórico de la conversación:

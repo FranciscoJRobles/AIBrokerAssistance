@@ -24,10 +24,10 @@ class NewsNode:
             companies = state_manager.get_companies()  # Lista de dicts con nombre y ticker
             global_query = state_manager.get_global_news_query()
             # TODO: comprobar si global_query tiene datos y hacer una búsqueda preliminar de empresas relevantes, luego añadirlas a companies y hacer la búsqueda completa.
-            resultado = self.get_companies_news(companies)
+            result = self.get_companies_news(companies)
             # TODO contemplar la posibilidad de hacer un filtrado preliminar de la lista de urls extraida de la búsqueda con el motor de búsqueda, ya sea con LLM u otro método.
             
-            state_manager.set_news_result(resultado)
+            state_manager.set_news_result(result)
             return state
         except Exception as e:
             print(f"NewsNode: Error al ejecutar el nodo: {e}")
@@ -42,6 +42,9 @@ class NewsNode:
             query = company.get("news_query")
             try:
                 news_list = self.search_news_serpapi(query)
+                for new in news_list:
+                    url = new.get("url")
+                    scrapped_new = scrape_url(url)
             except Exception as e:
                 print(f"SerpAPI error: {e}. Usando motor de búsqueda de respaldo.")
                 # TODO: Buscar con motor de búsqueda de respaldo
@@ -49,8 +52,7 @@ class NewsNode:
             result = {
                 "nombre": nombre,
                 "ticker": ticker,
-                "noticias": news_list,
-                "comentario": f"Noticias relevantes de {nombre} ({ticker}) extraídas correctamente."
+                "noticias": scrapped_new
             }
             results.append(result)
         return results

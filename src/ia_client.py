@@ -4,6 +4,7 @@ Módulo para gestionar la conexión y procesamiento de mensajes con la IA.
 """
 
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_core.messages import HumanMessage, SystemMessage
 from utils.env_loader import get_env_variable
 from enum import Enum
@@ -22,12 +23,16 @@ class IAModel(str, Enum):
     """
     Enum para definir los modelos de IA disponibles.
     """
-    BigModel = "gpt-4o" 
+    BigModel = "gpt-4o"
+    MediumModel = "gemini-2.5-flash" 
     SmallModel = "gpt-4o-mini"
+    Alternative1 = "gemini-2.0-flash" 
+    Alternative2 = ""
     Default = ""
 
 MAX_TOKENS = 4092  # Máximo de tokens para las respuestas
-IA_MODEL = IAModel.BigModel  # Modelo por defecto
+IA_MODEL = IAModel.MediumModel  # Modelo por defecto
+IA_EMBEDDINGS_MODEL = "azure"  # Modelo de embeddings por defecto: "azure" o "google"
 
 class IAClient:
     # Perfiles de configuración para la IA
@@ -64,48 +69,100 @@ class IAClient:
         }
     }   
 
-    def __init__(self, config=None, profile = IAProfilesEnum.ANALYST):
+    def __init__(self, config=None, profile = IAProfilesEnum.ANALYST, ia_model = None):
         """
         Inicializa el cliente de IA con Azure OpenAI y LangChain.
         Permite seleccionar un perfil de parámetros.
         """
         self.config = config or {}
-        self.profile = profile.value
-        self.ia_model = IAModel.Default
+        self.perfil = profile.value
+        self.ia_model = ia_model
 
         # Inicializa el modelo de generación y embeddings
-        self.llm = self._init_llm_text(IA_MODEL) # Modelo de texto
-        # Inicializa la memoria de conversación
+        self.llm = self._select_model(self.ia_model) # Modelo de texto
+        self.embedding_model = self._init_embeddings() # Modelo de embeddings semánticos
         self.memory = ConversationBufferMemory()
 
     def _init_llm_text(self, ia_model = IAModel.SmallModel):
         """
         Inicializa el modelo LLM con los parámetros del perfil actual.
         """
-        params = self.PROFILES.get(self.profile, self.PROFILES["neutral"])
+        params = self.PROFILES.get(self.perfil, self.PROFILES["neutral"])
         if ia_model == IAModel.BigModel:         
             llm = AzureChatOpenAI(
-                azure_deployment=get_env_variable("AZURE_OPENAI_DEPLOYMENT_NAME", ""),
-                azure_endpoint=get_env_variable("AZURE_OPENAI_ENDPOINT", ""),
-                api_version=get_env_variable("AZURE_OPENAI_API_VERSION", ""),
                 api_key=get_env_variable("AZURE_OPENAI_API_KEY", ""),
+                azure_endpoint=get_env_variable("AZURE_OPENAI_ENDPOINT", ""),
+                azure_deployment="gpt-4o-GM",
+                api_version="2025-01-01-preview",
                 temperature=params["temperature"],
                 top_p=params["top_p"],
                 max_tokens=params["max_tokens"]
             )
-        else:
+        if ia_model == IAModel.MediumModel:
+            llm = ChatGoogleGenerativeAI(
+                model="gemini-2.5-flash",
+                google_api_key=get_env_variable("GOOGLE_GEMINI_API_KEY"),
+                temperature=params["temperature"],
+                topP=params["top_p"],
+                max_output_tokens=params["max_tokens"]
+            )
+        elif ia_model == IAModel.SmallModel:
             llm = AzureChatOpenAI(
-                azure_deployment=get_env_variable("AZURE_OPENAI_DEPLOYMENT_NAME_SMALL", "gpt-4o-mini"),
-                azure_endpoint=get_env_variable("AZURE_OPENAI_ENDPOINT_SMALL", ""),
-                api_version=get_env_variable("AZURE_OPENAI_API_VERSION_SMALL", ""),
-                api_key=get_env_variable("AZURE_OPENAI_API_KEY_SMALL", ""),
+                api_key=get_env_variable("AZURE_OPENAI_API_KEY", ""),
+                azure_endpoint=get_env_variable("AZURE_OPENAI_ENDPOINT", ""),
+                azure_deployment="gpt-4o-mini-GM",            
+                api_version="2025-01-01-preview",
                 temperature=params["temperature"],
                 top_p=params["top_p"],
                 max_tokens=params["max_tokens"]
+            )
+        elif ia_model == IAModel.Alternative1:
+            llm = ChatGoogleGenerativeAI(
+                model="gemini-2.0-flash",
+                google_api_key=get_env_variable("GOOGLE_GEMINI_API_KEY"), 
+                temperature=params["temperature"],
+                topP=params["top_p"],
+                max_output_tokens=params["max_tokens"]
             )
             
         return llm
             
+
+    def _init_embeddings(self, task_type="retrieval_query"):
+        """
+        Inicializa el modelo de embeddings usando AzureOpenAIEmbeddings.
+        """
+        if IA_EMBEDDINGS_MODEL == "azure":            
+            embedding_model = AzureOpenAIEmbeddings(
+                api_key=get_env_variable("AZURE_OPENAI_EMBEDDINGS_API_KEY"),
+                azure_endpoint=get_env_variable("AZURE_OPENAI_EMBEDDINGS_ENDPOINT"),
+                azure_deployment="text-embedding-ada-002",
+                api_version="2023-05-15"
+            )
+        else:
+            embedding_model = GoogleGenerativeAIEmbeddings(
+                model="models/text-embedding-004",
+                google_api_key=get_env_variable("GOOGLE_GEMINI_API_KEY"), # api key gratuita
+                task_type=task_type  # o "retrieval_document", "classification", "clustering"
+            )
+        return embedding_model
+        
+    def _select_model(self, model: IAModel):
+        """
+        Selecciona el modelo de IA a usar.
+        Si model es diferente de None es porque hemos llamado a la IA especificando un model concreto.
+        Si model es None, se selecciona el modelo en función del modelo preestablecido en IA_MODEL;
+        si IA_MODEL es Default, se selecciona el modelo en función del consumption_mode.
+        """
+        if model != None and model != IAModel.Default:
+            llm = self._init_llm_text(model)
+        else:
+            defined_model = IA_MODEL
+            if defined_model != IAModel.Default:
+                llm = self._init_llm_text(defined_model)
+                
+        return llm
+
 
     def IA_call_process_message(self, message: str, context: str = None) -> str:
         """

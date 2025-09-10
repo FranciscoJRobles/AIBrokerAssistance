@@ -15,8 +15,15 @@ class ChatManager:
         print("Escribe tu pregunta o 'salir' para terminar.")
         print("El sistema está preparado para hacer análisis fundamental, técnico y de noticias. Si quieres información precisa sobre una empresa, intenta proporcionar el 'ticker' o el nombre exacto de la empresa en tu pregunta.")
         chat_history = ConversationBufferMemory()
+        tempaux=True
         while True:
-            question = input("\nPregunta: ")
+            #question = input("\nPregunta: ")
+            if tempaux:
+                question = "\nPregunta: dime si es buen momento para comprar acciones de Google y Nvidia en la próxima semana y por qué"
+                tempaux=False
+            else:
+                question = input("\nPregunta: ")
+
             if question.lower() == 'salir':
                 print("Hasta pronto!")
                 break
