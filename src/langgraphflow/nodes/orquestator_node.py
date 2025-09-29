@@ -77,8 +77,8 @@ class OrquestatorNode:
                 
             """
             # Llama al LLM
-            #llm_response = self.llm_client.IA_call_process_message(user_prompt, system_prompt)
-            llm_response = default_llm_response
+            llm_response = self.llm_client.IA_call_process_message(user_prompt, system_prompt)
+            #llm_response = default_llm_response
             data = json.loads(json_clean_response(llm_response))
             return data
         except Exception:
